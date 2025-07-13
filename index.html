@@ -152,12 +152,18 @@
             background: #f8f9fa;
         }
 
+        .services .section-title {
+            color: #2c5530;
+            text-shadow: none;
+        }
+
         .section-title {
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 3rem;
-            color: #2c5530;
+            color: #ffffff;
             position: relative;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .section-title::after {
@@ -265,6 +271,11 @@
         .contact {
             padding: 100px 0;
             background: #f8f9fa;
+        }
+
+        .contact .section-title {
+            color: #2c5530;
+            text-shadow: none;
         }
 
         .contact-content {
@@ -378,20 +389,97 @@
                 display: none;
             }
 
+            .hero {
+                padding: 120px 0 80px;
+            }
+
             .hero h1 {
                 font-size: 2.5rem;
             }
 
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .service-card {
+                padding: 1.5rem;
+            }
+
             .about-content {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .about-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .stat-item {
+                padding: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
             }
 
             .contact-content {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .contact-info,
+            .contact-form {
+                padding: 2rem;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
             }
 
             .about-stats {
                 grid-template-columns: 1fr;
+            }
+
+            .service-card {
+                padding: 1rem;
+            }
+
+            .contact-info,
+            .contact-form {
+                padding: 1.5rem;
+            }
+
+            .whatsapp-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
             }
         }
 
