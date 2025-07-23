@@ -1,303 +1,597 @@
-import telebot
-import json
-from datetime import datetime
-import sqlite3
-from telebot.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Shop - Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-# Замените на токен вашего бота
-BOT_TOKEN = '7688653923:AAFIrE3fRfFIGWyTdjvU_GvrlJzboxoMSZQ'
-bot = telebot.TeleBot(BOT_TOKEN)
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 0;
+            min-height: 100vh;
+        }
 
-# Инициализация базы данных
-def init_database():
-    conn = sqlite3.connect('orders.db')
-    cursor = conn.cursor()
-    
-    # Создание таблицы заказов
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            user_name TEXT,
-            order_data TEXT,
-            total_amount REAL,
-            status TEXT DEFAULT 'pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Создание таблицы товаров в заказе
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS order_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            order_id INTEGER,
-            product_name TEXT,
-            product_price REAL,
-            quantity INTEGER,
-            total REAL,
-            FOREIGN KEY (order_id) REFERENCES orders (id)
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-# Сохранение заказа в базу данных
-def save_order(user_id, user_name, order_data):
-    conn = sqlite3.connect('orders.db')
-    cursor = conn.cursor()
-    
-    # Парсинг данных заказа
-    data = json.loads(order_data)
-    total_amount = data.get('totalAmount', 0)
-    
-    # Сохранение основной информации о заказе
-    cursor.execute('''
-        INSERT INTO orders (user_id, user_name, order_data, total_amount)
-        VALUES (?, ?, ?, ?)
-    ''', (user_id, user_name, order_data, total_amount))
-    
-    order_id = cursor.lastrowid
-    
-    # Сохранение товаров заказа
-    for item in data.get('items', []):
-        cursor.execute('''
-            INSERT INTO order_items (order_id, product_name, product_price, quantity, total)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (order_id, item['name'], item['price'], item['quantity'], item['total']))
-    
-    conn.commit()
-    conn.close()
-    
-    return order_id
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
 
-# Форматирование заказа для отображения
-def format_order(order_data):
-    data = json.loads(order_data)
-    
-    message = "🛒 <b>НОВЫЙ ЗАКАЗ</b>\n\n"
-    
-    for item in data['items']:
-        message += f"📱 <b>{item['name']}</b>\n"
-        message += f"   Цена: {item['price']:,} ₽\n"
-        message += f"   Количество: {item['quantity']} шт.\n"
-        message += f"   Итого: {item['total']:,} ₽\n\n"
-    
-    message += f"💰 <b>Общая сумма: {data['totalAmount']:,} ₽</b>\n"
-    message += f"📅 <b>Дата:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}"
-    
-    return message
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
 
-# Команда /start
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    # URL вашего Mini App
-    web_app_url = "https://ваш-username.github.io/telegram-shop"  # Замените на ваш URL
-    
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton(
-        text="🛍️ Открыть магазин", 
-        web_app=WebAppInfo(url=web_app_url)
-    ))
-    
-    bot.send_message(
-        message.chat.id,
-        "🛍️ Добро пожаловать в Tech Shop!\n\n"
-        "Нажмите кнопку ниже, чтобы открыть каталог товаров:",
-        reply_markup=markup
-    )
+        .cart-info {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            position: sticky;
+            top: 84px;
+            z-index: 99;
+        }
 
-# Обработка данных из Mini App
-@bot.message_handler(content_types=['web_app_data'])
-def handle_webapp_data(message):
-    try:
-        # Получение данных заказа
-        order_data = message.web_app_data.data
-        user = message.from_user
-        user_name = f"{user.first_name} {user.last_name or ''}".strip()
-        
-        # Сохранение заказа в базу
-        order_id = save_order(user.id, user_name, order_data)
-        
-        # Парсинг данных для отображения
-        data = json.loads(order_data)
-        
-        # Отправка подтверждения пользователю
-        confirmation_msg = f"✅ <b>Заказ #{order_id} принят!</b>\n\n"
-        confirmation_msg += f"Товаров: {len(data['items'])} шт.\n"
-        confirmation_msg += f"Сумма: {data['totalAmount']:,} ₽\n\n"
-        confirmation_msg += "📞 Мы свяжемся с вами для подтверждения заказа в течение 30 минут.\n\n"
-        confirmation_msg += "Спасибо за покупку! 🎉"
-        
-        bot.send_message(
-            message.chat.id,
-            confirmation_msg,
-            parse_mode='HTML'
-        )
-        
-        # Отправка уведомления администратору
-        admin_id = YOUR_ADMIN_ID  # Замените на ваш Telegram ID
-        admin_message = f"👤 <b>Заказчик:</b> {user_name} (@{user.username or 'нет'})\n"
-        admin_message += f"🆔 <b>ID:</b> {user.id}\n"
-        admin_message += f"📞 <b>Телефон:</b> {user.phone_number or 'не указан'}\n\n"
-        admin_message += format_order(order_data)
-        
-        # Кнопки для администратора
-        admin_markup = InlineKeyboardMarkup()
-        admin_markup.row(
-            InlineKeyboardButton("✅ Подтвердить", callback_data=f"confirm_{order_id}"),
-            InlineKeyboardButton("❌ Отклонить", callback_data=f"reject_{order_id}")
-        )
-        admin_markup.add(
-            InlineKeyboardButton("📞 Связаться с клиентом", url=f"tg://user?id={user.id}")
-        )
-        
-        bot.send_message(
-            admin_id,
-            admin_message,
-            parse_mode='HTML',
-            reply_markup=admin_markup
-        )
-        
-        print(f"Новый заказ #{order_id} от {user_name} на сумму {data['totalAmount']} ₽")
-        
-    except Exception as e:
-        print(f"Ошибка обработки заказа: {e}")
-        bot.send_message(
-            message.chat.id,
-            "❌ Произошла ошибка при обработке заказа. Попробуйте еще раз."
-        )
+        .cart-count {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
 
-# Обработка нажатий кнопок администратора
-@bot.callback_query_handler(func=lambda call: True)
-def handle_admin_actions(call):
-    try:
-        action, order_id = call.data.split('_')
-        order_id = int(order_id)
+        .cart-total {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+            font-size: 18px;
+        }
+
+        .products-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-color: var(--tg-theme-button-color, #0088cc);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .product-description {
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+            margin-bottom: 15px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .quantity-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--tg-theme-button-color, #0088cc);
+            transition: background 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: white;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            padding: 8px 16px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+
+        .add-to-cart {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .add-to-cart:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .add-to-cart:active {
+            transform: translateY(0);
+        }
+
+        .checkout-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .checkout-section.show {
+            transform: translateY(0);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkout-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .checkout-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: var(--tg-theme-hint-color, #666666);
+            font-style: italic;
+        }
+
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .product-image {
+                height: 160px;
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛍️ Tech Shop</h1>
+        <p>Лучшие гаджеты и аксессуары</p>
+    </div>
+
+    <div class="cart-info">
+        <div>
+            <span>Корзина: </span>
+            <span class="cart-count" id="cartCount">0</span>
+            <span> товаров</span>
+        </div>
+        <div class="cart-total" id="cartTotal">0 ₽</div>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+        <!-- Товары будут добавлены через JavaScript -->
+    </div>
+
+    <div class="checkout-section" id="checkoutSection">
+        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
+            Оформить заказ на <span id="checkoutTotal">0 ₽</span>
+        </button>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Fallback для тестирования вне Telegram
+        let tg = window.Telegram?.WebApp || {
+            ready: () => {},
+            expand: () => {},
+            MainButton: {
+                text: '',
+                show: () => {},
+                hide: () => {},
+                onClick: () => {}
+            },
+            sendData: (data) => console.log('Отправка данных:', data),
+            HapticFeedback: {
+                impactOccurred: () => {},
+                notificationOccurred: () => {}
+            },
+            initDataUnsafe: { user: { id: 'demo', first_name: 'Demo' } },
+            themeParams: {},
+            onEvent: () => {}
+        };
         
-        # Получение информации о заказе
-        conn = sqlite3.connect('orders.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT user_id, user_name, total_amount, status FROM orders WHERE id = ?', (order_id,))
-        order = cursor.fetchone()
-        
-        if not order:
-            bot.answer_callback_query(call.id, "❌ Заказ не найден")
-            return
-        
-        user_id, user_name, total_amount, current_status = order
-        
-        if action == 'confirm':
-            if current_status == 'confirmed':
-                bot.answer_callback_query(call.id, "✅ Заказ уже подтвержден")
-                return
+        let cart = {};
+        let totalAmount = 0;
+
+        // Товары магазина
+        const products = [
+            {
+                id: 1,
+                name: "iPhone 15 Pro",
+                description: "Новейший смартфон Apple с чипом A17 Pro и камерой 48MP",
+                price: 89990,
+                emoji: "📱"
+            },
+            {
+                id: 2,
+                name: "MacBook Air M2",
+                description: "Ультратонкий ноутбук с процессором Apple M2 и 13.6\" дисплеем",
+                price: 109990,
+                emoji: "💻"
+            },
+            {
+                id: 3,
+                name: "AirPods Pro 2",
+                description: "Беспроводные наушники с активным шумоподавлением",
+                price: 24990,
+                emoji: "🎧"
+            },
+            {
+                id: 4,
+                name: "Apple Watch Ultra",
+                description: "Титановые умные часы для экстремальных условий",
+                price: 74990,
+                emoji: "⌚"
+            },
+            {
+                id: 5,
+                name: "iPad Pro 12.9\"",
+                description: "Планшет с чипом M2 и Liquid Retina XDR дисплеем",
+                price: 99990,
+                emoji: "📋"
+            },
+            {
+                id: 6,
+                name: "AirTag 4-pack",
+                description: "Метки для поиска потерянных вещей через сеть Find My",
+                price: 11990,
+                emoji: "🏷️"
+            }
+        ];
+
+        function initApp() {
+            console.log('Инициализация приложения...');
+            
+            // Проверка доступности Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                console.log('Telegram WebApp найден');
+            } else {
+                console.log('Работаем в демо режиме');
+            }
+            
+            tg.ready();
+            tg.expand();
+            
+            // Настройка главной кнопки
+            tg.MainButton.text = "Оформить заказ";
+            tg.MainButton.hide();
+            
+            renderProducts();
+            updateCartDisplay();
+            updateTheme();
+            
+            console.log('Приложение инициализировано');
+        }
+
+        function renderProducts() {
+            console.log('Отрисовка товаров...');
+            const grid = document.getElementById('productsGrid');
+            
+            if (!grid) {
+                console.error('Элемент productsGrid не найден');
+                return;
+            }
+            
+            grid.innerHTML = '';
+
+            products.forEach(product => {
+                console.log('Создание карточки для:', product.name);
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        ${product.emoji}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
+                        <div class="product-actions">
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)">−</button>
+                                <div class="quantity-display" id="qty-${product.id}">0</div>
+                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)">+</button>
+                            </div>
+                            <button class="add-to-cart" onclick="addToCart(${product.id})">
+                                В корзину
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(productCard);
+            });
+            
+            console.log('Товары отрисованы:', products.length);
+        }
+
+        function updateQuantity(productId, change) {
+            const currentQty = cart[productId] || 0;
+            const newQty = Math.max(0, currentQty + change);
+            
+            if (newQty === 0) {
+                delete cart[productId];
+            } else {
+                cart[productId] = newQty;
+            }
+            
+            document.getElementById(`qty-${productId}`).textContent = newQty;
+            updateCartDisplay();
+            
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        function addToCart(productId) {
+            const currentQty = cart[productId] || 0;
+            cart[productId] = currentQty + 1;
+            
+            document.getElementById(`qty-${productId}`).textContent = cart[productId];
+            updateCartDisplay();
+            
+            const product = products.find(p => p.id === productId);
+            showNotification(`${product.name} добавлен в корзину!`);
+            
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            totalAmount = Object.entries(cart).reduce((sum, [productId, qty]) => {
+                const product = products.find(p => p.id == productId);
+                return sum + (product.price * qty);
+            }, 0);
+
+            document.getElementById('cartCount').textContent = cartCount;
+            document.getElementById('cartTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
+            document.getElementById('checkoutTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
+
+            const checkoutSection = document.getElementById('checkoutSection');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            
+            if (cartCount > 0) {
+                checkoutSection.classList.add('show');
+                checkoutBtn.disabled = false;
                 
-            # Обновление статуса заказа
-            cursor.execute('UPDATE orders SET status = ? WHERE id = ?', ('confirmed', order_id))
-            conn.commit()
-            
-            # Уведомление клиента
-            bot.send_message(
-                user_id,
-                f"✅ <b>Заказ #{order_id} подтвержден!</b>\n\n"
-                f"Сумма: {total_amount:,.0f} ₽\n"
-                f"Статус: Подтвержден ✅\n\n"
-                f"Мы подготовим ваш заказ и уведомим о готовности к доставке.",
-                parse_mode='HTML'
-            )
-            
-            # Обновление сообщения администратора
-            bot.edit_message_text(
-                f"{call.message.text}\n\n✅ <b>ЗАКАЗ ПОДТВЕРЖДЕН</b>",
-                call.message.chat.id,
-                call.message.message_id,
-                parse_mode='HTML'
-            )
-            
-            bot.answer_callback_query(call.id, f"✅ Заказ #{order_id} подтвержден")
-            
-        elif action == 'reject':
-            if current_status == 'rejected':
-                bot.answer_callback_query(call.id, "❌ Заказ уже отклонен")
-                return
-                
-            # Обновление статуса заказа
-            cursor.execute('UPDATE orders SET status = ? WHERE id = ?', ('rejected', order_id))
-            conn.commit()
-            
-            # Уведомление клиента
-            bot.send_message(
-                user_id,
-                f"❌ <b>Заказ #{order_id} отклонен</b>\n\n"
-                f"К сожалению, мы не можем выполнить ваш заказ.\n"
-                f"Попробуйте оформить заказ позже или свяжитесь с поддержкой.",
-                parse_mode='HTML'
-            )
-            
-            # Обновление сообщения администратора
-            bot.edit_message_text(
-                f"{call.message.text}\n\n❌ <b>ЗАКАЗ ОТКЛОНЕН</b>",
-                call.message.chat.id,
-                call.message.message_id,
-                parse_mode='HTML'
-            )
-            
-            bot.answer_callback_query(call.id, f"❌ Заказ #{order_id} отклонен")
-        
-        conn.close()
-        
-    except Exception as e:
-        print(f"Ошибка обработки действия админа: {e}")
-        bot.answer_callback_query(call.id, "❌ Ошибка выполнения действия")
+                // Показать главную кнопку Telegram
+                tg.MainButton.text = `Оформить заказ на ${totalAmount.toLocaleString()} ₽`;
+                tg.MainButton.show();
+            } else {
+                checkoutSection.classList.remove('show');
+                checkoutBtn.disabled = true;
+                tg.MainButton.hide();
+            }
+        }
 
-# Команда для просмотра заказов (только для админа)
-@bot.message_handler(commands=['orders'])
-def show_orders(message):
-    admin_id = YOUR_ADMIN_ID  # Замените на ваш Telegram ID
-    
-    if message.from_user.id != admin_id:
-        bot.send_message(message.chat.id, "❌ У вас нет доступа к этой команде")
-        return
-    
-    conn = sqlite3.connect('orders.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, user_name, total_amount, status, created_at 
-        FROM orders 
-        ORDER BY created_at DESC 
-        LIMIT 10
-    ''')
-    orders = cursor.fetchall()
-    conn.close()
-    
-    if not orders:
-        bot.send_message(message.chat.id, "📋 Заказов пока нет")
-        return
-    
-    message_text = "📋 <b>Последние 10 заказов:</b>\n\n"
-    
-    for order in orders:
-        order_id, user_name, total_amount, status, created_at = order
-        status_emoji = {"pending": "⏳", "confirmed": "✅", "rejected": "❌"}
-        
-        message_text += f"🛒 <b>Заказ #{order_id}</b>\n"
-        message_text += f"👤 {user_name}\n"
-        message_text += f"💰 {total_amount:,.0f} ₽\n"
-        message_text += f"📊 {status_emoji.get(status, '❓')} {status.title()}\n"
-        message_text += f"📅 {created_at}\n\n"
-    
-    bot.send_message(message.chat.id, message_text, parse_mode='HTML')
+        function checkout() {
+            if (Object.keys(cart).length === 0) {
+                showNotification('Корзина пуста!');
+                return;
+            }
 
-if __name__ == '__main__':
-    # Настройки, которые нужно изменить:
-    BOT_TOKEN = '7688653923:AAFIrE3fRfFIGWyTdjvU_GvrlJzboxoMSZQ'  # Токен от @BotFather
-    YOUR_ADMIN_ID = 486854885  # Ваш Telegram ID (получить можно у @userinfobot)
-    
-    print("🤖 Инициализация базы данных...")
-    init_database()
-    
-    print("🚀 Запуск бота...")
-    print("📱 Mini App URL нужно изменить в функции send_welcome()")
-    print("⚙️  Не забудьте указать ваш BOT_TOKEN и ADMIN_ID")
-    
-    bot.polling(none_stop=True)
+            // Подготовка данных заказа
+            const orderData = {
+                items: Object.entries(cart).map(([productId, qty]) => {
+                    const product = products.find(p => p.id == productId);
+                    return {
+                        id: productId,
+                        name: product.name,
+                        price: product.price,
+                        quantity: qty,
+                        total: product.price * qty
+                    };
+                }),
+                totalAmount: totalAmount,
+                timestamp: new Date().toISOString(),
+                userId: tg.initDataUnsafe?.user?.id
+            };
+
+            // Отправить данные боту
+            tg.sendData(JSON.stringify(orderData));
+            
+            showNotification('Заказ отправлен! Спасибо за покупку! 🎉');
+            
+            // Очистить корзину
+            setTimeout(() => {
+                cart = {};
+                products.forEach(product => {
+                    document.getElementById(`qty-${product.id}`).textContent = '0';
+                });
+                updateCartDisplay();
+            }, 2000);
+
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function updateTheme() {
+            const root = document.documentElement;
+            const params = tg.themeParams;
+            
+            if (params.bg_color) root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+            if (params.text_color) root.style.setProperty('--tg-theme-text-color', params.text_color);
+            if (params.hint_color) root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+            if (params.button_color) root.style.setProperty('--tg-theme-button-color', params.button_color);
+            if (params.button_text_color) root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+            if (params.secondary_bg_color) root.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
+        }
+
+        // Обработчики событий Telegram
+        tg.onEvent('mainButtonClicked', checkout);
+
+        // Инициализация приложения после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, инициализируем приложение');
+            initApp();
+        });
+        
+        // Дополнительная проверка на случай, если DOMContentLoaded уже прошел
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM уже загружен
+            setTimeout(initApp, 100);
+        }
+    </script>
+</body>
+</html>
