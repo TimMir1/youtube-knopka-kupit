@@ -1,597 +1,247 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Shop - Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import telebot
+import json
+from datetime import datetime
+from telebot.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg-color, #f8f9fa);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 0;
-            min-height: 100vh;
-        }
+# ⚙️ НАСТРОЙКИ - ОБЯЗАТЕЛЬНО ИЗМЕНИТЕ!
+BOT_TOKEN = 'AAFIrE3fRfFIGWyTdjvU_GvrlJzboxoMSZQ'  # Токен от @BotFather
+ADMIN_ID = 7688653923  # Ваш Telegram ID (получить у @userinfobot)
+MINI_APP_URL = 'https://timmir1.github.io/Vivoz-musora/'  # URL вашего Mini App
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+bot = telebot.TeleBot(BOT_TOKEN)
 
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+# Команда /start - отправляет кнопку для открытия магазина
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(
+        text="🛍️ Открыть магазин", 
+        web_app=WebAppInfo(url=MINI_APP_URL)
+    ))
+    
+    welcome_text = """
+🛍️ <b>Добро пожаловать в Tech Shop!</b>
 
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
+📱 У нас есть лучшие гаджеты и аксессуары:
+• iPhone, MacBook, iPad
+• AirPods, Apple Watch
+• AirTag и многое другое
 
-        .cart-info {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            position: sticky;
-            top: 84px;
-            z-index: 99;
-        }
+Нажмите кнопку ниже, чтобы открыть каталог товаров 👇
+    """
+    
+    bot.send_message(
+        message.chat.id,
+        welcome_text,
+        parse_mode='HTML',
+        reply_markup=markup
+    )
 
-        .cart-count {
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        .cart-total {
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-            font-size: 18px;
-        }
-
-        .products-grid {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .product-card {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            border-color: var(--tg-theme-button-color, #0088cc);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .product-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-        }
-
-        .product-info {
-            padding: 20px;
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--tg-theme-text-color, #000000);
-        }
-
-        .product-description {
-            color: var(--tg-theme-hint-color, #666666);
-            font-size: 14px;
-            line-height: 1.4;
-            margin-bottom: 15px;
-        }
-
-        .product-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-            margin-bottom: 15px;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            background: var(--tg-theme-bg-color, #f8f9fa);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .quantity-btn {
-            background: none;
-            border: none;
-            padding: 8px 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--tg-theme-button-color, #0088cc);
-            transition: background 0.2s;
-        }
-
-        .quantity-btn:hover {
-            background: var(--tg-theme-button-color, #0088cc);
-            color: white;
-        }
-
-        .quantity-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .quantity-display {
-            padding: 8px 16px;
-            font-weight: bold;
-            min-width: 40px;
-            text-align: center;
-            background: white;
-            border: 1px solid #e0e0e0;
-        }
-
-        .add-to-cart {
-            background: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-        }
-
-        .add-to-cart:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .add-to-cart:active {
-            transform: translateY(0);
-        }
-
-        .checkout-section {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            padding: 20px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .checkout-section.show {
-            transform: translateY(0);
-        }
-
-        .checkout-btn {
-            width: 100%;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .checkout-btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
-
-        .checkout-btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .empty-cart {
-            text-align: center;
-            color: var(--tg-theme-hint-color, #666666);
-            font-style: italic;
-        }
-
-        .notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .notification.show {
-            opacity: 1;
-        }
-
-        @media (max-width: 768px) {
-            .products-grid {
-                grid-template-columns: 1fr;
-                padding: 15px;
-                gap: 15px;
-            }
-            
-            .product-image {
-                height: 160px;
-                font-size: 50px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🛍️ Tech Shop</h1>
-        <p>Лучшие гаджеты и аксессуары</p>
-    </div>
-
-    <div class="cart-info">
-        <div>
-            <span>Корзина: </span>
-            <span class="cart-count" id="cartCount">0</span>
-            <span> товаров</span>
-        </div>
-        <div class="cart-total" id="cartTotal">0 ₽</div>
-    </div>
-
-    <div class="products-grid" id="productsGrid">
-        <!-- Товары будут добавлены через JavaScript -->
-    </div>
-
-    <div class="checkout-section" id="checkoutSection">
-        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
-            Оформить заказ на <span id="checkoutTotal">0 ₽</span>
-        </button>
-    </div>
-
-    <div class="notification" id="notification"></div>
-
-    <script>
-        // Fallback для тестирования вне Telegram
-        let tg = window.Telegram?.WebApp || {
-            ready: () => {},
-            expand: () => {},
-            MainButton: {
-                text: '',
-                show: () => {},
-                hide: () => {},
-                onClick: () => {}
-            },
-            sendData: (data) => console.log('Отправка данных:', data),
-            HapticFeedback: {
-                impactOccurred: () => {},
-                notificationOccurred: () => {}
-            },
-            initDataUnsafe: { user: { id: 'demo', first_name: 'Demo' } },
-            themeParams: {},
-            onEvent: () => {}
-        };
+# Основная функция - обработка заказов из Mini App
+@bot.message_handler(content_types=['web_app_data'])
+def handle_order(message):
+    try:
+        # Получаем данные заказа из Mini App
+        order_data = json.loads(message.web_app_data.data)
+        user = message.from_user
+        user_name = f"{user.first_name} {user.last_name or ''}".strip()
         
-        let cart = {};
-        let totalAmount = 0;
-
-        // Товары магазина
-        const products = [
-            {
-                id: 1,
-                name: "iPhone 15 Pro",
-                description: "Новейший смартфон Apple с чипом A17 Pro и камерой 48MP",
-                price: 89990,
-                emoji: "📱"
-            },
-            {
-                id: 2,
-                name: "MacBook Air M2",
-                description: "Ультратонкий ноутбук с процессором Apple M2 и 13.6\" дисплеем",
-                price: 109990,
-                emoji: "💻"
-            },
-            {
-                id: 3,
-                name: "AirPods Pro 2",
-                description: "Беспроводные наушники с активным шумоподавлением",
-                price: 24990,
-                emoji: "🎧"
-            },
-            {
-                id: 4,
-                name: "Apple Watch Ultra",
-                description: "Титановые умные часы для экстремальных условий",
-                price: 74990,
-                emoji: "⌚"
-            },
-            {
-                id: 5,
-                name: "iPad Pro 12.9\"",
-                description: "Планшет с чипом M2 и Liquid Retina XDR дисплеем",
-                price: 99990,
-                emoji: "📋"
-            },
-            {
-                id: 6,
-                name: "AirTag 4-pack",
-                description: "Метки для поиска потерянных вещей через сеть Find My",
-                price: 11990,
-                emoji: "🏷️"
-            }
-        ];
-
-        function initApp() {
-            console.log('Инициализация приложения...');
-            
-            // Проверка доступности Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                console.log('Telegram WebApp найден');
-            } else {
-                console.log('Работаем в демо режиме');
-            }
-            
-            tg.ready();
-            tg.expand();
-            
-            // Настройка главной кнопки
-            tg.MainButton.text = "Оформить заказ";
-            tg.MainButton.hide();
-            
-            renderProducts();
-            updateCartDisplay();
-            updateTheme();
-            
-            console.log('Приложение инициализировано');
-        }
-
-        function renderProducts() {
-            console.log('Отрисовка товаров...');
-            const grid = document.getElementById('productsGrid');
-            
-            if (!grid) {
-                console.error('Элемент productsGrid не найден');
-                return;
-            }
-            
-            grid.innerHTML = '';
-
-            products.forEach(product => {
-                console.log('Создание карточки для:', product.name);
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    <div class="product-image">
-                        ${product.emoji}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
-                        <div class="product-actions">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)">−</button>
-                                <div class="quantity-display" id="qty-${product.id}">0</div>
-                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)">+</button>
-                            </div>
-                            <button class="add-to-cart" onclick="addToCart(${product.id})">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(productCard);
-            });
-            
-            console.log('Товары отрисованы:', products.length);
-        }
-
-        function updateQuantity(productId, change) {
-            const currentQty = cart[productId] || 0;
-            const newQty = Math.max(0, currentQty + change);
-            
-            if (newQty === 0) {
-                delete cart[productId];
-            } else {
-                cart[productId] = newQty;
-            }
-            
-            document.getElementById(`qty-${productId}`).textContent = newQty;
-            updateCartDisplay();
-            
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        function addToCart(productId) {
-            const currentQty = cart[productId] || 0;
-            cart[productId] = currentQty + 1;
-            
-            document.getElementById(`qty-${productId}`).textContent = cart[productId];
-            updateCartDisplay();
-            
-            const product = products.find(p => p.id === productId);
-            showNotification(`${product.name} добавлен в корзину!`);
-            
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function updateCartDisplay() {
-            const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            totalAmount = Object.entries(cart).reduce((sum, [productId, qty]) => {
-                const product = products.find(p => p.id == productId);
-                return sum + (product.price * qty);
-            }, 0);
-
-            document.getElementById('cartCount').textContent = cartCount;
-            document.getElementById('cartTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
-            document.getElementById('checkoutTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
-
-            const checkoutSection = document.getElementById('checkoutSection');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            
-            if (cartCount > 0) {
-                checkoutSection.classList.add('show');
-                checkoutBtn.disabled = false;
-                
-                // Показать главную кнопку Telegram
-                tg.MainButton.text = `Оформить заказ на ${totalAmount.toLocaleString()} ₽`;
-                tg.MainButton.show();
-            } else {
-                checkoutSection.classList.remove('show');
-                checkoutBtn.disabled = true;
-                tg.MainButton.hide();
-            }
-        }
-
-        function checkout() {
-            if (Object.keys(cart).length === 0) {
-                showNotification('Корзина пуста!');
-                return;
-            }
-
-            // Подготовка данных заказа
-            const orderData = {
-                items: Object.entries(cart).map(([productId, qty]) => {
-                    const product = products.find(p => p.id == productId);
-                    return {
-                        id: productId,
-                        name: product.name,
-                        price: product.price,
-                        quantity: qty,
-                        total: product.price * qty
-                    };
-                }),
-                totalAmount: totalAmount,
-                timestamp: new Date().toISOString(),
-                userId: tg.initDataUnsafe?.user?.id
-            };
-
-            // Отправить данные боту
-            tg.sendData(JSON.stringify(orderData));
-            
-            showNotification('Заказ отправлен! Спасибо за покупку! 🎉');
-            
-            // Очистить корзину
-            setTimeout(() => {
-                cart = {};
-                products.forEach(product => {
-                    document.getElementById(`qty-${product.id}`).textContent = '0';
-                });
-                updateCartDisplay();
-            }, 2000);
-
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function updateTheme() {
-            const root = document.documentElement;
-            const params = tg.themeParams;
-            
-            if (params.bg_color) root.style.setProperty('--tg-theme-bg-color', params.bg_color);
-            if (params.text_color) root.style.setProperty('--tg-theme-text-color', params.text_color);
-            if (params.hint_color) root.style.setProperty('--tg-theme-hint-color', params.hint_color);
-            if (params.button_color) root.style.setProperty('--tg-theme-button-color', params.button_color);
-            if (params.button_text_color) root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
-            if (params.secondary_bg_color) root.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
-        }
-
-        // Обработчики событий Telegram
-        tg.onEvent('mainButtonClicked', checkout);
-
-        // Инициализация приложения после загрузки DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем приложение');
-            initApp();
-        });
+        # Генерируем уникальный номер заказа
+        order_number = f"{datetime.now().strftime('%Y%m%d')}{user.id % 1000:03d}"
         
-        // Дополнительная проверка на случай, если DOMContentLoaded уже прошел
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {
-            // DOM уже загружен
-            setTimeout(initApp, 100);
-        }
-    </script>
-</body>
-</html>
+        # 1️⃣ ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ КЛИЕНТУ
+        client_message = f"""
+✅ <b>Заказ #{order_number} принят!</b>
+
+📦 <b>Ваш заказ:</b>
+"""
+        
+        # Добавляем товары в сообщение клиенту
+        for item in order_data['items']:
+            client_message += f"• {item['name']} - {item['quantity']} шт. × {item['price']:,} ₽\n"
+        
+        client_message += f"""
+💰 <b>Итого: {order_data['totalAmount']:,} ₽</b>
+
+📞 Мы свяжемся с вами в течение 30 минут для подтверждения заказа.
+
+🎉 Спасибо за покупку!
+        """
+        
+        bot.send_message(
+            message.chat.id,
+            client_message,
+            parse_mode='HTML'
+        )
+        
+        # 2️⃣ ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ АДМИНИСТРАТОРУ
+        admin_message = f"""
+🔔 <b>НОВЫЙ ЗАКАЗ #{order_number}</b>
+
+👤 <b>Клиент:</b> {user_name}
+🆔 <b>Username:</b> @{user.username or 'не указан'}
+🔗 <b>ID:</b> {user.id}
+📅 <b>Дата:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}
+
+🛒 <b>ЗАКАЗ:</b>
+"""
+        
+        # Добавляем детали заказа для админа
+        for item in order_data['items']:
+            admin_message += f"""
+📱 <b>{item['name']}</b>
+   💰 Цена: {item['price']:,} ₽
+   📦 Количество: {item['quantity']} шт.
+   💵 Сумма: {item['total']:,} ₽
+"""
+        
+        admin_message += f"\n💰 <b>ИТОГО: {order_data['totalAmount']:,} ₽</b>"
+        
+        # Кнопки для администратора
+        admin_markup = InlineKeyboardMarkup()
+        admin_markup.row(
+            InlineKeyboardButton("✅ Подтвердить", callback_data=f"confirm_{user.id}_{order_number}"),
+            InlineKeyboardButton("❌ Отклонить", callback_data=f"reject_{user.id}_{order_number}")
+        )
+        admin_markup.add(
+            InlineKeyboardButton("📞 Написать клиенту", url=f"tg://user?id={user.id}")
+        )
+        
+        # Отправляем админу
+        bot.send_message(
+            ADMIN_ID,
+            admin_message,
+            parse_mode='HTML',
+            reply_markup=admin_markup
+        )
+        
+        # Логируем в консоль
+        print(f"✅ Новый заказ #{order_number}")
+        print(f"👤 Клиент: {user_name} (ID: {user.id})")
+        print(f"💰 Сумма: {order_data['totalAmount']:,} ₽")
+        print(f"📦 Товаров: {len(order_data['items'])}")
+        print("-" * 50)
+        
+    except Exception as e:
+        print(f"❌ Ошибка обработки заказа: {e}")
+        bot.send_message(
+            message.chat.id,
+            "❌ Произошла ошибка при оформлении заказа.\nПопробуйте еще раз или обратитесь в поддержку."
+        )
+
+# Обработка кнопок администратора
+@bot.callback_query_handler(func=lambda call: True)
+def handle_admin_buttons(call):
+    try:
+        # Парсим данные кнопки: action_userId_orderNumber
+        parts = call.data.split('_')
+        action = parts[0]  # confirm или reject
+        user_id = int(parts[1])
+        order_number = parts[2]
+        
+        if action == 'confirm':
+            # Подтверждаем заказ
+            bot.send_message(
+                user_id,
+                f"""
+✅ <b>Заказ #{order_number} подтвержден!</b>
+
+🎉 Отлично! Ваш заказ принят в работу.
+
+📦 Мы подготовим товары и свяжемся с вами для уточнения деталей доставки.
+
+⏰ Ожидаемое время подготовки: 1-2 рабочих дня.
+
+Спасибо за доверие! 🙏
+                """,
+                parse_mode='HTML'
+            )
+            
+            # Обновляем сообщение админа
+            bot.edit_message_text(
+                f"{call.message.text}\n\n✅ <b>ЗАКАЗ ПОДТВЕРЖДЕН</b>",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML'
+            )
+            
+            bot.answer_callback_query(call.id, f"✅ Заказ #{order_number} подтвержден!")
+            
+        elif action == 'reject':
+            # Отклоняем заказ
+            bot.send_message(
+                user_id,
+                f"""
+❌ <b>Заказ #{order_number} отклонен</b>
+
+😔 К сожалению, мы не можем выполнить ваш заказ по техническим причинам.
+
+Возможные причины:
+• Товар временно отсутствует на складе
+• Технические неполадки в системе
+
+🔄 Попробуйте оформить заказ позже или свяжитесь с нашей поддержкой.
+
+Приносим извинения за неудобства! 🙏
+                """,
+                parse_mode='HTML'
+            )
+            
+            # Обновляем сообщение админа
+            bot.edit_message_text(
+                f"{call.message.text}\n\n❌ <b>ЗАКАЗ ОТКЛОНЕН</b>",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML'
+            )
+            
+            bot.answer_callback_query(call.id, f"❌ Заказ #{order_number} отклонен")
+            
+    except Exception as e:
+        print(f"❌ Ошибка обработки кнопки админа: {e}")
+        bot.answer_callback_query(call.id, "❌ Ошибка выполнения действия")
+
+# Команда /help - показывает доступные команды
+@bot.message_handler(commands=['help'])
+def send_help(message):
+    help_text = """
+🤖 <b>Доступные команды:</b>
+
+/start - Открыть магазин
+/help - Показать эту справку
+
+💡 <b>Как сделать заказ:</b>
+1. Нажмите /start
+2. Откройте магазин
+3. Выберите товары
+4. Оформите заказ
+5. Ждите подтверждения
+
+📞 <b>Поддержка:</b> @ваш_username
+    """
+    
+    bot.send_message(message.chat.id, help_text, parse_mode='HTML')
+
+# Обработка любых других сообщений
+@bot.message_handler(func=lambda message: True)
+def handle_other_messages(message):
+    bot.send_message(
+        message.chat.id,
+        "🤖 Привет! Нажмите /start чтобы открыть магазин.\n\n"
+        "Или /help для просмотра доступных команд."
+    )
+
+if __name__ == '__main__':
+    print("🤖 Запуск Telegram бота для обработки заказов...")
+    print("⚙️  Проверьте настройки:")
+    print(f"   📱 Mini App URL: {MINI_APP_URL}")
+    print(f"   👤 Admin ID: {ADMIN_ID}")
+    print("🚀 Бот запущен! Нажмите Ctrl+C для остановки.")
+    print("-" * 50)
+    
+    try:
+        bot.polling(none_stop=True)
+    except KeyboardInterrupt:
+        print("\n🛑 Бот остановлен")
+    except Exception as e:
+        print(f"❌ Ошибка бота: {e}")
