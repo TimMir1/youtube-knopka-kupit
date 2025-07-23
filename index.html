@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ЧистоДел PRO - Профессиональный вывоз мусора</title>
+    <title>Tech Shop - Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,820 +13,585 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 0;
+            min-height: 100vh;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Header */
-        header {
-            background: linear-gradient(135deg, #2c5530 0%, #4a7c59 100%);
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1rem 0;
-            position: fixed;
-            width: 100%;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
             top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        nav {
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .cart-info {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            position: sticky;
+            top: 84px;
+            z-index: 99;
         }
 
-        .logo {
-            font-size: 1.8rem;
+        .cart-count {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .cart-total {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+            font-size: 18px;
+        }
+
+        .products-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-color: var(--tg-theme-button-color, #0088cc);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .logo::before {
-            content: "♻️";
-            font-size: 2rem;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: #a8d5aa;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #a8d5aa;
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 150px 0 100px;
+            justify-content: center;
+            font-size: 60px;
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
+        .product-image::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="0,0 1000,100 1000,0"/></svg>');
-            background-size: 100% 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
+        .product-info {
+            padding: 20px;
         }
 
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            animation: fadeInUp 1s ease;
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
         }
 
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            animation: fadeInUp 1s ease 0.3s both;
+        .product-description {
+            color: var(--tg-theme-hint-color, #666666);
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
         }
 
-        .cta-button {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-            animation: fadeInUp 1s ease 0.6s both;
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+            margin-bottom: 15px;
         }
 
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        /* Services Section */
-        .services {
-            padding: 100px 0;
-            background: #f8f9fa;
-        }
-
-        .services .section-title {
-            color: #2c5530;
-            text-shadow: none;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #ffffff;
-            position: relative;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            border-radius: 2px;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-        }
-
-        .service-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            border-radius: 8px;
             overflow: hidden;
         }
 
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: all 0.5s ease;
-        }
-
-        .service-card:hover::before {
-            left: 100%;
-        }
-
-        .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-
-        .service-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .service-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #2c5530;
-        }
-
-        /* About Section */
-        .about {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-        }
-
-        .about-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #a8d5aa;
-        }
-
-        /* Contact Section */
-        .contact {
-            padding: 100px 0;
-            background: #f8f9fa;
-        }
-
-        .contact .section-title {
-            color: #2c5530;
-            text-shadow: none;
-        }
-
-        .contact-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-        }
-
-        .contact-info {
-            background: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .contact-item:hover {
-            background: #e9ecef;
-            transform: translateX(10px);
-        }
-
-        .contact-icon {
-            font-size: 1.5rem;
-            margin-right: 1rem;
-            color: #2c5530;
-        }
-
-        .contact-form {
-            background: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #2c5530;
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #2c5530;
-        }
-
-        .submit-btn {
-            background: linear-gradient(45deg, #2c5530, #4a7c59);
-            color: white;
-            padding: 15px 40px;
+        .quantity-btn {
+            background: none;
             border: none;
-            border-radius: 50px;
+            padding: 8px 12px;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            width: 100%;
+            color: var(--tg-theme-button-color, #0088cc);
+            transition: background 0.2s;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(44, 85, 48, 0.3);
-        }
-
-        /* Footer */
-        footer {
-            background: #2c5530;
+        .quantity-btn:hover {
+            background: var(--tg-theme-button-color, #0088cc);
             color: white;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            padding: 8px 16px;
+            font-weight: bold;
+            min-width: 40px;
             text-align: center;
-            padding: 2rem 0;
+            background: white;
+            border: 1px solid #e0e0e0;
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .hero {
-                padding: 120px 0 80px;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero p {
-                font-size: 1.1rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .services-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .service-card {
-                padding: 1.5rem;
-            }
-
-            .about-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .about-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-
-            .stat-item {
-                padding: 1.5rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .contact-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .contact-info,
-            .contact-form {
-                padding: 2rem;
-            }
-
-            .container {
-                padding: 0 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .section-title {
-                font-size: 1.8rem;
-            }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            .about-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .service-card {
-                padding: 1rem;
-            }
-
-            .contact-info,
-            .contact-form {
-                padding: 1.5rem;
-            }
-
-            .whatsapp-btn {
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-        }
-
-        /* Floating Elements */
-        .whatsapp-btn {
-            display: inline-block;
-            background: linear-gradient(45deg, #25d366, #128c7e);
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin: 2px 0;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .whatsapp-btn:hover {
-            background: linear-gradient(45deg, #128c7e, #25d366);
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
-        }
-
-        .floating-element {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 15px;
-            border-radius: 50%;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        .add-to-cart {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .add-to-cart:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .add-to-cart:active {
+            transform: translateY(0);
+        }
+
+        .checkout-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .checkout-section.show {
+            transform: translateY(0);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkout-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .checkout-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: var(--tg-theme-hint-color, #666666);
+            font-style: italic;
+        }
+
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
             z-index: 1000;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .floating-element:hover {
-            transform: scale(1.1);
+        .notification.show {
+            opacity: 1;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .product-image {
+                height: 160px;
+                font-size: 50px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <nav class="container">
-            <div class="logo">ЧистоДел PRO</div>
-            <ul class="nav-links">
-                <li><a href="#home">Главная</a></li>
-                <li><a href="#services">Услуги</a></li>
-                <li><a href="#about">О нас</a></li>
-                <li><a href="#contact">Контакты</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <section id="home" class="hero">
-        <div class="hero-content container">
-            <h1>Профессиональный вывоз мусора</h1>
-            <p>Быстро, надежно, экологично - мы заботимся о чистоте вашего города</p>
-            <a href="#contact" class="cta-button">Заказать вывоз</a>
-        </div>
-    </section>
-
-    <section id="services" class="services">
-        <div class="container">
-            <h2 class="section-title">Наши услуги</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <span class="service-icon">🗑️</span>
-                    <h3>Вывоз бытового мусора</h3>
-                    <p>Регулярный вывоз мусора от частных домов и квартир. Гибкий график, доступные цены.</p>
-                    <div class="contact-item">
-                        <span class="contact-icon">🕐</span>
-                        <div>
-                            <strong>Режим работы:</strong><br>
-                            Круглосуточно, без выходных
-                        </div>
-                    </div>
-                <div class="service-card">
-                    <span class="service-icon">🏗️</span>
-                    <h3>Строительный мусор</h3>
-                    <p>Вывоз строительного и ремонтного мусора любого объема. Работаем с контейнерами разных размеров.</p>
-                </div>
-                <div class="service-card">
-                    <span class="service-icon">🏢</span>
-                    <h3>Коммерческий вывоз</h3>
-                    <p>Обслуживание офисов, магазинов, ресторанов и других коммерческих объектов по договору.</p>
-                </div>
-                <div class="service-card">
-                    <span class="service-icon">♻️</span>
-                    <h3>Раздельный сбор</h3>
-                    <p>Экологичный подход к утилизации отходов с сортировкой и переработкой вторичного сырья.</p>
-                </div>
-                <div class="service-card">
-                    <span class="service-icon">🌱</span>
-                    <h3>Вывоз органики</h3>
-                    <p>Специализированный вывоз органических отходов для дальнейшей переработки в компост.</p>
-                </div>
-                <div class="service-card">
-                    <span class="service-icon">🚛</span>
-                    <h3>Аренда контейнеров</h3>
-                    <p>Предоставляем контейнеры различного объема для временного размещения отходов.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="about" class="about">
-        <div class="container">
-            <h2 class="section-title">Почему выбирают нас</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <h3>Более 10 лет на рынке</h3>
-                    <p>Мы работаем в сфере вывоза и утилизации отходов уже более десяти лет. За это время мы накопили огромный опыт и построили репутацию надежного партнера.</p>
-                    <p>Наша команда состоит из профессионалов, которые знают все особенности работы с различными видами отходов и всегда готовы предложить оптимальное решение для каждого клиента.</p>
-                    <p>Мы используем современную технику и следуем всем экологическим стандартам, заботясь о будущем нашей планеты.</p>
-                </div>
-                <div class="about-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">5000+</div>
-                        <div>Довольных клиентов</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">50+</div>
-                        <div>Единиц техники</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div>Круглосуточно</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">99%</div>
-                        <div>Переработка отходов</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2 class="section-title">Свяжитесь с нами</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <h3>Контактная информация</h3>
-                    <div class="contact-item">
-                        <span class="contact-icon">📞</span>
-                        <div>
-                            <strong>Телефоны:</strong><br>
-                            +7 977 966-25-21<br>
-                            +7 977 107-38-34
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">📧</span>
-                        <div>
-                            <strong>Email:</strong><br>
-                            <a href="mailto:timyur0530@mail.ru" style="color: #2c5530; text-decoration: none;">timyur0530@mail.ru</a>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">📍</span>
-                        <div>
-                            <strong>Область работы:</strong><br>
-                            г. Москва и Московская область
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">💬</span>
-                        <div>
-                            <strong>WhatsApp:</strong><br>
-                            <a href="https://wa.me/79779662521" target="_blank" class="whatsapp-btn">
-                                📱 +7 977 966-25-21
-                            </a><br>
-                            <a href="https://wa.me/79771073834" target="_blank" class="whatsapp-btn">
-                                📱 +7 977 107-38-34
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="contact-form">
-                    <h3>Оставить заявку</h3>
-                    <form action="https://formspree.io/f/xovwgzna" method="POST">
-                        <div class="form-group">
-                            <label for="name">Ваше имя:</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Телефон:</label>
-                            <input type="tel" id="phone" name="phone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" name="email">
-                        </div>
-                        <div class="form-group">
-                            <label for="service">Услуга:</label>
-                            <select id="service" name="service" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem;">
-                                <option value="">Выберите услугу</option>
-                                <option value="household">Вывоз бытового мусора</option>
-                                <option value="construction">Строительный мусор</option>
-                                <option value="commercial">Коммерческий вывоз</option>
-                                <option value="recycling">Раздельный сбор</option>
-                                <option value="organic">Вывоз органики</option>
-                                <option value="containers">Аренда контейнеров</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Сообщение:</label>
-                            <textarea id="message" name="message" rows="4" placeholder="Опишите ваши потребности..."></textarea>
-                        </div>
-                        <button type="submit" class="submit-btn">Отправить заявку</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 ЧистоДел PRO. Все права защищены. Профессиональный вывоз мусора в Москве и области.</p>
-        </div>
-    </footer>
-
-    <div class="floating-element" onclick="window.open('https://wa.me/79779662521', '_blank')">
-        💬
+    <div class="header">
+        <h1>🛍️ Tech Shop</h1>
+        <p>Лучшие гаджеты и аксессуары</p>
     </div>
 
+    <div class="cart-info">
+        <div>
+            <span>Корзина: </span>
+            <span class="cart-count" id="cartCount">0</span>
+            <span> товаров</span>
+        </div>
+        <div class="cart-total" id="cartTotal">0 ₽</div>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+        <!-- Товары будут добавлены через JavaScript -->
+    </div>
+
+    <div class="checkout-section" id="checkoutSection">
+        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
+            Оформить заказ на <span id="checkoutTotal">0 ₽</span>
+        </button>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        // Fallback для тестирования вне Telegram
+        let tg = window.Telegram?.WebApp || {
+            ready: () => {},
+            expand: () => {},
+            MainButton: {
+                text: '',
+                show: () => {},
+                hide: () => {},
+                onClick: () => {}
+            },
+            sendData: (data) => console.log('Отправка данных:', data),
+            HapticFeedback: {
+                impactOccurred: () => {},
+                notificationOccurred: () => {}
+            },
+            initDataUnsafe: { user: { id: 'demo', first_name: 'Demo' } },
+            themeParams: {},
+            onEvent: () => {}
+        };
+        
+        let cart = {};
+        let totalAmount = 0;
 
-        // Header background on scroll
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(44, 85, 48, 0.95)';
-                header.style.backdropFilter = 'blur(10px)';
-            } else {
-                header.style.background = 'linear-gradient(135deg, #2c5530 0%, #4a7c59 100%)';
-                header.style.backdropFilter = 'none';
+        // Товары магазина
+        const products = [
+            {
+                id: 1,
+                name: "iPhone 15 Pro",
+                description: "Новейший смартфон Apple с чипом A17 Pro и камерой 48MP",
+                price: 89990,
+                emoji: "📱"
+            },
+            {
+                id: 2,
+                name: "MacBook Air M2",
+                description: "Ультратонкий ноутбук с процессором Apple M2 и 13.6\" дисплеем",
+                price: 109990,
+                emoji: "💻"
+            },
+            {
+                id: 3,
+                name: "AirPods Pro 2",
+                description: "Беспроводные наушники с активным шумоподавлением",
+                price: 24990,
+                emoji: "🎧"
+            },
+            {
+                id: 4,
+                name: "Apple Watch Ultra",
+                description: "Титановые умные часы для экстремальных условий",
+                price: 74990,
+                emoji: "⌚"
+            },
+            {
+                id: 5,
+                name: "iPad Pro 12.9\"",
+                description: "Планшет с чипом M2 и Liquid Retina XDR дисплеем",
+                price: 99990,
+                emoji: "📋"
+            },
+            {
+                id: 6,
+                name: "AirTag 4-pack",
+                description: "Метки для поиска потерянных вещей через сеть Find My",
+                price: 11990,
+                emoji: "🏷️"
             }
-        });
+        ];
 
-        // Form submission handling
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function initApp() {
+            console.log('Инициализация приложения...');
             
-            // Get form data
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
+            // Проверка доступности Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                console.log('Telegram WebApp найден');
+            } else {
+                console.log('Работаем в демо режиме');
+            }
             
-            // Simple validation
-            if (!data.name || !data.phone) {
-                alert('Пожалуйста, заполните обязательные поля: имя и телефон');
+            tg.ready();
+            tg.expand();
+            
+            // Настройка главной кнопки
+            tg.MainButton.text = "Оформить заказ";
+            tg.MainButton.hide();
+            
+            renderProducts();
+            updateCartDisplay();
+            updateTheme();
+            
+            console.log('Приложение инициализировано');
+        }
+
+        function renderProducts() {
+            console.log('Отрисовка товаров...');
+            const grid = document.getElementById('productsGrid');
+            
+            if (!grid) {
+                console.error('Элемент productsGrid не найден');
                 return;
             }
             
-            // Show loading state
-            const submitBtn = this.querySelector('.submit-btn');
-            const originalText = submitBtn.textContent;
-            
-            submitBtn.textContent = 'Отправляем...';
-            submitBtn.disabled = true;
-            
-            // Submit form to Formspree
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Спасибо за заявку! Мы свяжемся с вами в ближайшее время.');
-                    this.reset();
-                } else {
-                    response.json().then(data => {
-                        if (data.errors) {
-                            alert('Ошибка: ' + data.errors.map(error => error.message).join(', '));
-                        } else {
-                            alert('Произошла ошибка при отправке заявки. Попробуйте еще раз.');
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при отправке заявки. Проверьте подключение к интернету.');
-            })
-            .finally(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            });
-        });
+            grid.innerHTML = '';
 
-        // Animate elements on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe service cards
-        document.querySelectorAll('.service-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'all 0.6s ease';
-            observer.observe(card);
-        });
-
-        // Add hover effects to contact items
-        document.querySelectorAll('.contact-item').forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateX(10px) scale(1.02)';
+            products.forEach(product => {
+                console.log('Создание карточки для:', product.name);
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        ${product.emoji}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
+                        <div class="product-actions">
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)">−</button>
+                                <div class="quantity-display" id="qty-${product.id}">0</div>
+                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)">+</button>
+                            </div>
+                            <button class="add-to-cart" onclick="addToCart(${product.id})">
+                                В корзину
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(productCard);
             });
             
-            item.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateX(0) scale(1)';
-            });
+            console.log('Товары отрисованы:', products.length);
+        }
+
+        function updateQuantity(productId, change) {
+            const currentQty = cart[productId] || 0;
+            const newQty = Math.max(0, currentQty + change);
+            
+            if (newQty === 0) {
+                delete cart[productId];
+            } else {
+                cart[productId] = newQty;
+            }
+            
+            document.getElementById(`qty-${productId}`).textContent = newQty;
+            updateCartDisplay();
+            
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        function addToCart(productId) {
+            const currentQty = cart[productId] || 0;
+            cart[productId] = currentQty + 1;
+            
+            document.getElementById(`qty-${productId}`).textContent = cart[productId];
+            updateCartDisplay();
+            
+            const product = products.find(p => p.id === productId);
+            showNotification(`${product.name} добавлен в корзину!`);
+            
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            totalAmount = Object.entries(cart).reduce((sum, [productId, qty]) => {
+                const product = products.find(p => p.id == productId);
+                return sum + (product.price * qty);
+            }, 0);
+
+            document.getElementById('cartCount').textContent = cartCount;
+            document.getElementById('cartTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
+            document.getElementById('checkoutTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
+
+            const checkoutSection = document.getElementById('checkoutSection');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            
+            if (cartCount > 0) {
+                checkoutSection.classList.add('show');
+                checkoutBtn.disabled = false;
+                
+                // Показать главную кнопку Telegram
+                tg.MainButton.text = `Оформить заказ на ${totalAmount.toLocaleString()} ₽`;
+                tg.MainButton.show();
+            } else {
+                checkoutSection.classList.remove('show');
+                checkoutBtn.disabled = true;
+                tg.MainButton.hide();
+            }
+        }
+
+        function checkout() {
+            if (Object.keys(cart).length === 0) {
+                showNotification('Корзина пуста!');
+                return;
+            }
+
+            // Подготовка данных заказа
+            const orderData = {
+                items: Object.entries(cart).map(([productId, qty]) => {
+                    const product = products.find(p => p.id == productId);
+                    return {
+                        id: productId,
+                        name: product.name,
+                        price: product.price,
+                        quantity: qty,
+                        total: product.price * qty
+                    };
+                }),
+                totalAmount: totalAmount,
+                timestamp: new Date().toISOString(),
+                userId: tg.initDataUnsafe?.user?.id
+            };
+
+            // Отправить данные боту
+            tg.sendData(JSON.stringify(orderData));
+            
+            showNotification('Заказ отправлен! Спасибо за покупку! 🎉');
+            
+            // Очистить корзину
+            setTimeout(() => {
+                cart = {};
+                products.forEach(product => {
+                    document.getElementById(`qty-${product.id}`).textContent = '0';
+                });
+                updateCartDisplay();
+            }, 2000);
+
+            // Тактильная обратная связь
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function updateTheme() {
+            const root = document.documentElement;
+            const params = tg.themeParams;
+            
+            if (params.bg_color) root.style.setProperty('--tg-theme-bg-color', params.bg_color);
+            if (params.text_color) root.style.setProperty('--tg-theme-text-color', params.text_color);
+            if (params.hint_color) root.style.setProperty('--tg-theme-hint-color', params.hint_color);
+            if (params.button_color) root.style.setProperty('--tg-theme-button-color', params.button_color);
+            if (params.button_text_color) root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
+            if (params.secondary_bg_color) root.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
+        }
+
+        // Обработчики событий Telegram
+        tg.onEvent('mainButtonClicked', checkout);
+
+        // Инициализация приложения после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, инициализируем приложение');
+            initApp();
         });
+        
+        // Дополнительная проверка на случай, если DOMContentLoaded уже прошел
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM уже загружен
+            setTimeout(initApp, 100);
+        }
     </script>
 </body>
 </html>
