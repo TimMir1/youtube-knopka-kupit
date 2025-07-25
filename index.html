@@ -1,10 +1,13 @@
+Вот стильный и современный сайт для продажи кнопок YouTube:
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Shop - Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>YouTube Buttons Shop | Премиум кнопки для вашего канала</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,95 +16,100 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg-color, #f8f9fa);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 0;
-            min-height: 100vh;
-        }
-
-        .header {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            line-height: 1.6;
         }
 
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .cart-info {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            position: sticky;
-            top: 84px;
-            z-index: 99;
-        }
-
-        .cart-count {
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        .cart-total {
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-            font-size: 18px;
-        }
-
-        .products-grid {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .product-card {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            border-color: var(--tg-theme-button-color, #0088cc);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1577372092997-8b36f1120e98?ixlib=rb-4.0.3') center/cover;
+            height: 500px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .whatsapp-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25D366;
+            color: white;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .whatsapp-badge:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -100px auto 50px;
+            padding: 0 20px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px) rotate(2deg);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        .product-image {
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            color: white;
             position: relative;
             overflow: hidden;
         }
@@ -109,489 +117,388 @@
         .product-image::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transform: rotate(30deg);
         }
 
-        .product-info {
-            padding: 20px;
+        .product-content {
+            padding: 25px;
+            text-align: center;
         }
 
         .product-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--tg-theme-text-color, #000000);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
         }
 
         .product-description {
-            color: var(--tg-theme-hint-color, #666666);
-            font-size: 14px;
-            line-height: 1.4;
-            margin-bottom: 15px;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
         }
 
         .product-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-            margin-bottom: 15px;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ff6b6b;
+            margin-bottom: 25px;
         }
 
-        .product-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            background: var(--tg-theme-bg-color, #f8f9fa);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .quantity-btn {
-            background: none;
-            border: none;
-            padding: 8px 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--tg-theme-button-color, #0088cc);
-            transition: background 0.2s;
-        }
-
-        .quantity-btn:hover {
-            background: var(--tg-theme-button-color, #0088cc);
+        .buy-button {
+            background: linear-gradient(45deg, #25D366, #128C7E);
             color: white;
-        }
-
-        .quantity-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .quantity-display {
-            padding: 8px 16px;
-            font-weight: bold;
-            min-width: 40px;
-            text-align: center;
-            background: white;
-            border: 1px solid #e0e0e0;
-        }
-
-        .add-to-cart {
-            background: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .add-to-cart:hover {
-            opacity: 0.9;
+        .buy-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6);
+        }
+
+        .buy-button:active {
             transform: translateY(-1px);
         }
 
-        .add-to-cart:active {
-            transform: translateY(0);
-        }
-
-        .checkout-section {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            padding: 20px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .checkout-section.show {
-            transform: translateY(0);
-        }
-
-        .checkout-btn {
-            width: 100%;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .checkout-btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
-
-        .checkout-btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .empty-cart {
+        .features {
+            background: white;
+            padding: 80px 20px;
             text-align: center;
-            color: var(--tg-theme-hint-color, #666666);
-            font-style: italic;
         }
 
-        .notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #4CAF50;
+        .features h2 {
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #333;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            padding: 30px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .notification.show {
-            opacity: 1;
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .phone-number {
+            font-size: 1.8rem;
+            color: #25D366;
+            font-weight: bold;
+            margin: 20px 0;
+            display: block;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 768px) {
-            .products-grid {
-                grid-template-columns: 1fr;
-                padding: 15px;
-                gap: 15px;
+            .hero h1 {
+                font-size: 2.5rem;
             }
             
-            .product-image {
-                height: 160px;
-                font-size: 50px;
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: -50px auto 30px;
+            }
+            
+            .whatsapp-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 25px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🛍️ Tech Shop</h1>
-        <p>Лучшие гаджеты и аксессуары</p>
-    </div>
-
-    <div class="cart-info">
-        <div>
-            <span>Корзина: </span>
-            <span class="cart-count" id="cartCount">0</span>
-            <span> товаров</span>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Премиум кнопки YouTube</h1>
+            <p>Создайте уникальный стиль для вашего канала</p>
         </div>
-        <div class="cart-total" id="cartTotal">0 ₽</div>
+    </section>
+
+    <div class="container">
+        <div class="products-grid">
+            <!-- Товар 1 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #ff4757, #ff3742);">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Подписаться"</h3>
+                    <p class="product-description">Профессиональная кнопка подписки для максимальной конверсии</p>
+                    <div class="product-price">299 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Подписаться', '299')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Товар 2 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #ffa502, #ff9500);">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Колокольчик"</h3>
+                    <p class="product-description">Уведомления для ваших самых преданных подписчиков</p>
+                    <div class="product-price">349 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Колокольчик', '349')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Товар 3 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #2ed573, #1dd1a1);">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Лайк"</h3>
+                    <p class="product-description">Стильная кнопка лайка для повышения вовлеченности</p>
+                    <div class="product-price">199 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Лайк', '199')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Товар 4 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #ff6b6b, #ee5a24);">
+                    <i class="fas fa-thumbs-down"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Дизлайк"</h3>
+                    <p class="product-description">Полный комплект для честной оценки контента</p>
+                    <div class="product-price">199 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Дизлайк', '199')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Товар 5 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #70a1ff, #1e90ff);">
+                    <i class="fas fa-comment"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Комментарий"</h3>
+                    <p class="product-description">Стимулируйте обсуждение под вашими видео</p>
+                    <div class="product-price">249 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Комментарий', '249')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Товар 6 -->
+            <div class="product-card">
+                <div class="product-image" style="background: linear-gradient(45deg, #feca57, #ff9ff3);">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">Кнопка "Избранное"</h3>
+                    <p class="product-description">Добавьте видео в избранное одним кликом</p>
+                    <div class="product-price">299 ₽</div>
+                    <button class="buy-button" onclick="buyProduct('Кнопка Избранное', '299')">
+                        <i class="fab fa-whatsapp"></i> Заказать
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="products-grid" id="productsGrid">
-        <!-- Товары будут добавлены через JavaScript -->
-    </div>
+    <section class="features">
+        <h2>Почему выбирают нас?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Быстрая доставка</h3>
+                <p>Мгновенная отправка файлов после оплаты</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Гарантия качества</h3>
+                <p>Все кнопки высокого разрешения</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="feature-title">Поддержка 24/7</h3>
+                <p>Всегда на связи в WhatsApp</p>
+            </div>
+        </div>
+    </section>
 
-    <div class="checkout-section" id="checkoutSection">
-        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
-            Оформить заказ на <span id="checkoutTotal">0 ₽</span>
-        </button>
-    </div>
+    <footer>
+        <h3>Сделайте заказ прямо сейчас!</h3>
+        <span class="phone-number">📞 8 (977) 966-25-21</span>
+        <p>Работаем ежедневно с 9:00 до 21:00</p>
+        <p>&copy; 2024 YouTube Buttons Shop. Все права защищены.</p>
+    </footer>
 
-    <div class="notification" id="notification"></div>
+    <a href="https://wa.me/79779662521" class="whatsapp-badge pulse" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <script>
-        // Fallback для тестирования вне Telegram
-        let tg = window.Telegram?.WebApp || {
-            ready: () => {},
-            expand: () => {},
-            MainButton: {
-                text: '',
-                show: () => {},
-                hide: () => {},
-                onClick: () => {}
-            },
-            sendData: (data) => console.log('Отправка данных:', data),
-            HapticFeedback: {
-                impactOccurred: () => {},
-                notificationOccurred: () => {}
-            },
-            initDataUnsafe: { user: { id: 'demo', first_name: 'Demo' } },
-            themeParams: {},
-            onEvent: () => {}
-        };
-        
-        let cart = {};
-        let totalAmount = 0;
-
-        // Товары магазина
-        const products = [
-            {
-                id: 1,
-                name: "iPhone 15 Pro",
-                description: "Новейший смартфон Apple с чипом A17 Pro и камерой 48MP",
-                price: 89990,
-                emoji: "📱"
-            },
-            {
-                id: 2,
-                name: "MacBook Air M2",
-                description: "Ультратонкий ноутбук с процессором Apple M2 и 13.6\" дисплеем",
-                price: 109990,
-                emoji: "💻"
-            },
-            {
-                id: 3,
-                name: "AirPods Pro 2",
-                description: "Беспроводные наушники с активным шумоподавлением",
-                price: 24990,
-                emoji: "🎧"
-            },
-            {
-                id: 4,
-                name: "Apple Watch Ultra",
-                description: "Титановые умные часы для экстремальных условий",
-                price: 74990,
-                emoji: "⌚"
-            },
-            {
-                id: 5,
-                name: "iPad Pro 12.9\"",
-                description: "Планшет с чипом M2 и Liquid Retina XDR дисплеем",
-                price: 99990,
-                emoji: "📋"
-            },
-            {
-                id: 6,
-                name: "AirTag 4-pack",
-                description: "Метки для поиска потерянных вещей через сеть Find My",
-                price: 11990,
-                emoji: "🏷️"
-            }
-        ];
-
-        function initApp() {
-            console.log('Инициализация приложения...');
-            
-            // Проверка доступности Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                console.log('Telegram WebApp найден');
-            } else {
-                console.log('Работаем в демо режиме');
-            }
-            
-            tg.ready();
-            tg.expand();
-            
-            // Настройка главной кнопки
-            tg.MainButton.text = "Оформить заказ";
-            tg.MainButton.hide();
-            
-            renderProducts();
-            updateCartDisplay();
-            updateTheme();
-            
-            console.log('Приложение инициализировано');
+        function buyProduct(productName, price) {
+            const message = `Здравствуйте! Хочу заказать "${productName}" за ${price} руб.\n\nПожалуйста, уточните детали заказа.`;
+            const phoneNumber = '79779662521';
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
         }
 
-        function renderProducts() {
-            console.log('Отрисовка товаров...');
-            const grid = document.getElementById('productsGrid');
-            
-            if (!grid) {
-                console.error('Элемент productsGrid не найден');
-                return;
-            }
-            
-            grid.innerHTML = '';
-
-            products.forEach(product => {
-                console.log('Создание карточки для:', product.name);
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    <div class="product-image">
-                        ${product.emoji}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
-                        <div class="product-actions">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)">−</button>
-                                <div class="quantity-display" id="qty-${product.id}">0</div>
-                                <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)">+</button>
-                            </div>
-                            <button class="add-to-cart" onclick="addToCart(${product.id})">
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(productCard);
-            });
-            
-            console.log('Товары отрисованы:', products.length);
-        }
-
-        function updateQuantity(productId, change) {
-            const currentQty = cart[productId] || 0;
-            const newQty = Math.max(0, currentQty + change);
-            
-            if (newQty === 0) {
-                delete cart[productId];
-            } else {
-                cart[productId] = newQty;
-            }
-            
-            document.getElementById(`qty-${productId}`).textContent = newQty;
-            updateCartDisplay();
-            
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        function addToCart(productId) {
-            const currentQty = cart[productId] || 0;
-            cart[productId] = currentQty + 1;
-            
-            document.getElementById(`qty-${productId}`).textContent = cart[productId];
-            updateCartDisplay();
-            
-            const product = products.find(p => p.id === productId);
-            showNotification(`${product.name} добавлен в корзину!`);
-            
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function updateCartDisplay() {
-            const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            totalAmount = Object.entries(cart).reduce((sum, [productId, qty]) => {
-                const product = products.find(p => p.id == productId);
-                return sum + (product.price * qty);
-            }, 0);
-
-            document.getElementById('cartCount').textContent = cartCount;
-            document.getElementById('cartTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
-            document.getElementById('checkoutTotal').textContent = `${totalAmount.toLocaleString()} ₽`;
-
-            const checkoutSection = document.getElementById('checkoutSection');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            
-            if (cartCount > 0) {
-                checkoutSection.classList.add('show');
-                checkoutBtn.disabled = false;
-                
-                // Показать главную кнопку Telegram
-                tg.MainButton.text = `Оформить заказ на ${totalAmount.toLocaleString()} ₽`;
-                tg.MainButton.show();
-            } else {
-                checkoutSection.classList.remove('show');
-                checkoutBtn.disabled = true;
-                tg.MainButton.hide();
-            }
-        }
-
-        function checkout() {
-            if (Object.keys(cart).length === 0) {
-                showNotification('Корзина пуста!');
-                return;
-            }
-
-            // Подготовка данных заказа
-            const orderData = {
-                items: Object.entries(cart).map(([productId, qty]) => {
-                    const product = products.find(p => p.id == productId);
-                    return {
-                        id: productId,
-                        name: product.name,
-                        price: product.price,
-                        quantity: qty,
-                        total: product.price * qty
-                    };
-                }),
-                totalAmount: totalAmount,
-                timestamp: new Date().toISOString(),
-                userId: tg.initDataUnsafe?.user?.id
-            };
-
-            // Отправить данные боту
-            tg.sendData(JSON.stringify(orderData));
-            
-            showNotification('Заказ отправлен! Спасибо за покупку! 🎉');
-            
-            // Очистить корзину
-            setTimeout(() => {
-                cart = {};
-                products.forEach(product => {
-                    document.getElementById(`qty-${product.id}`).textContent = '0';
-                });
-                updateCartDisplay();
-            }, 2000);
-
-            // Тактильная обратная связь
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function updateTheme() {
-            const root = document.documentElement;
-            const params = tg.themeParams;
-            
-            if (params.bg_color) root.style.setProperty('--tg-theme-bg-color', params.bg_color);
-            if (params.text_color) root.style.setProperty('--tg-theme-text-color', params.text_color);
-            if (params.hint_color) root.style.setProperty('--tg-theme-hint-color', params.hint_color);
-            if (params.button_color) root.style.setProperty('--tg-theme-button-color', params.button_color);
-            if (params.button_text_color) root.style.setProperty('--tg-theme-button-text-color', params.button_text_color);
-            if (params.secondary_bg_color) root.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color);
-        }
-
-        // Обработчики событий Telegram
-        tg.onEvent('mainButtonClicked', checkout);
-
-        // Инициализация приложения после загрузки DOM
+        // Анимация при скролле
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем приложение');
-            initApp();
+            const cards = document.querySelectorAll('.product-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
         });
-        
-        // Дополнительная проверка на случай, если DOMContentLoaded уже прошел
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {
-            // DOM уже загружен
-            setTimeout(initApp, 100);
-        }
     </script>
 </body>
 </html>
+```
+
+Этот сайт включает множество современных фич:
+
+🌟 **Дизайн и анимации:**
+- Градиентный фон и современный дизайн
+- Плавные анимации при наведении
+- Анимация при скролле
+- Пульсирующая WhatsApp кнопка
+- Hero секция с фоновым изображением
+
+🎨 **Визуальные эффекты:**
+- Круглая WhatsApp кнопка в правом нижнем углу
+- Красивые градиенты для каждой карточки
+- Font Awesome иконки
+- Тени и переходы
+- Адаптивный дизайн для мобильных
+
+🚀 **Функциональность:**
+- Все кнопки ведут на ваш WhatsApp
+- Предзаполненные сообщения с названием товара
+- Номер телефона в футере
+- Секция с преимуществами
+
+📱 **Мобильная оптимизация:**
+- Адаптивная сетка
+- Оптимизированные размеры для мобильных
+- Touch-friendly элементы
+
+При нажатии на любую кнопку "Заказать" автоматически открывается WhatsApp с предзаполненным сообщением типа:
+```
+Здравствуйте! Хочу заказать "Кнопка Подписаться" за 299 руб.
+
+Пожалуйста, уточните детали заказа.
+```
